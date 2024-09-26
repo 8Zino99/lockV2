@@ -1,9 +1,10 @@
--- beta-test 
+-- made By Z
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
+
 
 local Aimbot = {
     Enabled = false,
@@ -17,33 +18,6 @@ local Aimbot = {
     LockedTarget = nil
 }
 
-local gui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
-local toggleButton = Instance.new("TextButton", gui)
-toggleButton.Size = UDim2.new(0, 100, 0, 50)
-toggleButton.Position = UDim2.new(1, -110, 0, 10)
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Text = "Aimbot: OFF"
-toggleButton.TextSize = 18
-toggleButton.Font = Enum.Font.SourceSans
-
-local circleSizeBox = Instance.new("TextBox", gui)
-circleSizeBox.Size = UDim2.new(0, 100, 0, 50)
-circleSizeBox.Position = UDim2.new(1, -110, 0, 70)
-circleSizeBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-circleSizeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-circleSizeBox.Text = tostring(Aimbot.FOVRadius)
-circleSizeBox.TextSize = 18
-circleSizeBox.Font = Enum.Font.SourceSans
-
-local speedBox = Instance.new("TextBox", gui)
-speedBox.Size = UDim2.new(0, 100, 0, 50)
-speedBox.Position = UDim2.new(1, -110, 0, 130)
-speedBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedBox.Text = "Enter Speed"
-speedBox.TextSize = 18
-speedBox.Font = Enum.Font.SourceSans
 
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 2
@@ -52,6 +26,64 @@ FOVCircle.Color = Color3.fromRGB(0, 255, 0)
 FOVCircle.Filled = false
 FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 FOVCircle.Visible = Aimbot.DrawFOV
+
+
+local function CreateGUI()
+    local gui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
+    
+    local toggleButton = Instance.new("TextButton", gui)
+    toggleButton.Size = UDim2.new(0, 100, 0, 50)
+    toggleButton.Position = UDim2.new(1, -110, 0, 10)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Text = "Aimbot: OFF"
+    toggleButton.TextSize = 18
+    toggleButton.Font = Enum.Font.SourceSans
+    
+    local circleSizeBox = Instance.new("TextBox", gui)
+    circleSizeBox.Size = UDim2.new(0, 100, 0, 50)
+    circleSizeBox.Position = UDim2.new(1, -110, 0, 70)
+    circleSizeBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    circleSizeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    circleSizeBox.Text = tostring(Aimbot.FOVRadius)
+    circleSizeBox.TextSize = 18
+    circleSizeBox.Font = Enum.Font.SourceSans
+    
+    local speedBox = Instance.new("TextBox", gui)
+    speedBox.Size = UDim2.new(0, 100, 0, 50)
+    speedBox.Position = UDim2.new(1, -110, 0, 130)
+    speedBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    speedBox.Text = "Enter Speed"
+    speedBox.TextSize = 18
+    speedBox.Font = Enum.Font.SourceSans
+
+
+    toggleButton.MouseButton1Click:Connect(function()
+        Aimbot.Enabled = not Aimbot.Enabled
+        toggleButton.Text = Aimbot.Enabled and "Aimbot: ON" or "Aimbot: OFF"
+        if not Aimbot.Enabled then
+            Aimbot.LockedTarget = nil
+        else
+            Aimbot.LockedTarget = GetClosestTarget()
+        end
+    end)
+
+    circleSizeBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            UpdateFOVCircleSize(circleSizeBox.Text)
+        end
+    end)
+
+    speedBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            UpdatePlayerSpeed(speedBox.Text)
+        end
+    end)
+    
+    return gui
+end
+
 
 local function UpdateFOVCircleSize(size)
     Aimbot.FOVRadius = tonumber(size) or Aimbot.FOVRadius
@@ -122,26 +154,14 @@ local function TrackPlayers()
     end
 end
 
-toggleButton.MouseButton1Click:Connect(function()
-    Aimbot.Enabled = not Aimbot.Enabled
-    toggleButton.Text = Aimbot.Enabled and "Aimbot: ON" or "Aimbot: OFF"
-    if not Aimbot.Enabled then
-        Aimbot.LockedTarget = nil
-    else
-        Aimbot.LockedTarget = GetClosestTarget()
-    end
-end)
 
-circleSizeBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        UpdateFOVCircleSize(circleSizeBox.Text)
-    end
-end)
+LocalPlayer.CharacterAdded:Connect(function(character)
+    wait(1) 
 
-speedBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        UpdatePlayerSpeed(speedBox.Text)
+    if gui then
+        gui:Destroy() 
     end
+    gui = CreateGUI()
 end)
 
 RunService.RenderStepped:Connect(function()
@@ -151,5 +171,5 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- GUI updated
-UpdateFOVCircleSize(circleSizeBox.Text)
+
+local gui = CreateGUI()
