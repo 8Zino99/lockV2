@@ -1,258 +1,264 @@
--- by ZINO👾
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
+-- by ZINO👾 join discord! https://discord.gg/vWWM9nArfB
+local P = game:GetService("Players")
+local R = game:GetService("RunService")
+local C = workspace.CurrentCamera
+local U = game:GetService("UserInputService")
+local L = P.LocalPlayer
 
-local Aimbot = {
-    Enabled = false,
-    FOVRadius = 150,
-    LockPart = "Head",
-    MaxDistance = 1000,
-    Smoothness = 0.1,
-    Prediction = 0.1,
-    AutoShoot = true,
-    DrawFOV = true,
-    LockedTarget = nil
+
+local A = {
+    E = false,
+    F = 150,
+    P = "Head",
+    M = 1000,
+    S = 0.1,
+    D = 0.1,
+    A = true,
+    FOV = true,
+    T = nil
 }
 
-local ESPSettings = {
-    Enabled = true,
-    BoxColor = Color3.fromRGB(0, 255, 0),
-    NameColor = Color3.fromRGB(255, 255, 255),
-    BoxThickness = 2
+
+local E = {
+    E = true,
+    C = Color3.fromRGB(0, 255, 0),
+    N = Color3.fromRGB(255, 255, 255),
+    T = 2
 }
 
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Thickness = 2
-FOVCircle.Radius = Aimbot.FOVRadius
-FOVCircle.Color = Color3.fromRGB(0, 255, 0)
-FOVCircle.Filled = false
-FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-FOVCircle.Visible = Aimbot.DrawFOV
+local FOVC = Drawing.new("Circle")
+FOVC.Thickness = 2
+FOVC.Radius = A.F
+FOVC.Color = Color3.fromRGB(0, 255, 0)
+FOVC.Filled = false
+FOVC.Position = Vector2.new(C.ViewportSize.X / 2, C.ViewportSize.Y / 2)
+FOVC.Visible = A.FOV
 
-local ESPObjects = {}
+local ESPs = {}
 
-local function CreateESP(player)
-    local character = player.Character
-    if not character then return end
 
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    local head = character:FindFirstChild("Head")
-    if not rootPart or not head then return end
+local function CESP(p)
+    local c = p.Character
+    if not c then return end
 
-    local box = Drawing.new("Square")
-    box.Thickness = ESPSettings.BoxThickness
-    box.Color = ESPSettings.BoxColor
-    box.Visible = true
-    box.Filled = false
+    local r = c:FindFirstChild("HumanoidRootPart")
+    local h = c:FindFirstChild("Head")
+    if not r or not h then return end
 
-    local nameTag = Drawing.new("Text")
-    nameTag.Text = player.Name
-    nameTag.Size = 18
-    nameTag.Color = ESPSettings.NameColor
-    nameTag.Center = true
-    nameTag.Outline = true
-    nameTag.OutlineColor = Color3.new(0, 0, 0)
+    local b = Drawing.new("Square")
+    b.Thickness = E.T
+    b.Color = E.C
+    b.Visible = true
+    b.Filled = false
 
-    ESPObjects[player] = {box = box, nameTag = nameTag}
+    local n = Drawing.new("Text")
+    n.Text = p.Name
+    n.Size = 18
+    n.Color = E.N
+    n.Center = true
+    n.Outline = true
+    n.OutlineColor = Color3.new(0, 0, 0)
 
-    local function UpdateESP()
-        if not player.Character or not rootPart or not head or not rootPart:IsDescendantOf(workspace) then
-            box.Visible = false
-            nameTag.Visible = false
+    ESPs[p] = {box = b, nameTag = n}
+
+    local function UESP()
+        if not p.Character or not r or not h or not r:IsDescendantOf(workspace) then
+            b.Visible = false
+            n.Visible = false
             return
         end
 
-        local rootPosition, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
-        local headPosition = Camera:WorldToViewportPoint(head.Position)
+        local rp, onScreen = C:WorldToViewportPoint(r.Position)
+        local hp = C:WorldToViewportPoint(h.Position)
 
         if onScreen then
-            box.Size = Vector2.new(2000 / rootPosition.Z, 2500 / rootPosition.Z)
-            box.Position = Vector2.new(rootPosition.X - box.Size.X / 2, rootPosition.Y - box.Size.Y / 2)
+            b.Size = Vector2.new(2000 / rp.Z, 2500 / rp.Z)
+            b.Position = Vector2.new(rp.X - b.Size.X / 2, rp.Y - b.Size.Y / 2)
 
-            nameTag.Position = Vector2.new(headPosition.X, headPosition.Y - 20)
-            nameTag.Visible = true
-            box.Visible = true
+            n.Position = Vector2.new(hp.X, hp.Y - 20)
+            n.Visible = true
+            b.Visible = true
         else
-            nameTag.Visible = false
-            box.Visible = false
+            n.Visible = false
+            b.Visible = false
         end
     end
 
-    local connection = RunService.RenderStepped:Connect(UpdateESP)
+    local conn = R.RenderStepped:Connect(UESP)
 
-    player.CharacterRemoving:Connect(function()
-        if ESPObjects[player] then
-            ESPObjects[player].box:Remove()
-            ESPObjects[player].nameTag:Remove()
-            ESPObjects[player] = nil
+    p.CharacterRemoving:Connect(function()
+        if ESPs[p] then
+            ESPs[p].box:Remove()
+            ESPs[p].nameTag:Remove()
+            ESPs[p] = nil
         end
-        connection:Disconnect()
+        conn:Disconnect()
     end)
 end
 
-local function AddESPToAllPlayers()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            player.CharacterAdded:Connect(function()
+local function AESP()
+    for _, p in ipairs(P:GetPlayers()) do
+        if p ~= L then
+            p.CharacterAdded:Connect(function()
                 wait(1)
-                CreateESP(player)
+                CESP(p)
             end)
-            if player.Character then
-                CreateESP(player)
+            if p.Character then
+                CESP(p)
             end
         end
     end
 end
 
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
+P.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function()
         wait(1)
-        CreateESP(player)
+        CESP(p)
     end)
 end)
 
-Players.PlayerRemoving:Connect(function(player)
-    if ESPObjects[player] then
-        ESPObjects[player].box:Remove()
-        ESPObjects[player].nameTag:Remove()
-        ESPObjects[player] = nil
+P.PlayerRemoving:Connect(function(p)
+    if ESPs[p] then
+        ESPs[p].box:Remove()
+        ESPs[p].nameTag:Remove()
+        ESPs[p] = nil
     end
 end)
 
-AddESPToAllPlayers()
+AESP()
 
-local function GetClosestTarget()
-    local closestTarget = nil
-    local closestDistance = math.huge
 
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(Aimbot.LockPart) then
-            local targetPart = player.Character[Aimbot.LockPart]
-            local targetPosition, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
+local function GCT()
+    local closest = nil
+    local minDist = math.huge
+
+    for _, p in pairs(P:GetPlayers()) do
+        if p ~= L and p.Character and p.Character:FindFirstChild(A.P) then
+            local tP = p.Character[A.P]
+            local tPos, onScreen = C:WorldToViewportPoint(tP.Position)
 
             if onScreen then
-                local distance = (Vector2.new(targetPosition.X, targetPosition.Y) - Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)).Magnitude
-                if distance <= Aimbot.FOVRadius then
-                    local distanceFromPlayer = (targetPart.Position - Camera.CFrame.Position).Magnitude
-                    if distanceFromPlayer <= Aimbot.MaxDistance and distance < closestDistance then
-                        closestDistance = distance
-                        closestTarget = player
+                local dist = (Vector2.new(tPos.X, tPos.Y) - Vector2.new(C.ViewportSize.X / 2, C.ViewportSize.Y / 2)).Magnitude
+                if dist <= A.F then
+                    local distFromCamera = (tP.Position - C.CFrame.Position).Magnitude
+                    if distFromCamera <= A.M and dist < minDist then
+                        minDist = dist
+                        closest = p
                     end
                 end
             end
         end
     end
 
-    return closestTarget
+    return closest
 end
 
-local function PredictMovement(target)
-    local targetPart = target.Character:FindFirstChild(Aimbot.LockPart)
-    if not targetPart then return targetPart.Position end
-    local velocity = targetPart.Velocity
-    return targetPart.Position + (velocity * Aimbot.Prediction)
+local function PM(target)
+    local tP = target.Character:FindFirstChild(A.P)
+    if not tP then return tP.Position end
+    local v = tP.Velocity
+    return tP.Position + (v * A.D)
 end
 
-local function AimAt(target)
+local function AA(target)
     if target and target.Character then
-        local targetPosition = PredictMovement(target)
-        local targetPart = target.Character:FindFirstChild(Aimbot.LockPart)
-        if targetPart then
-            local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPosition)
-            Camera.CFrame = targetCFrame
-            if Aimbot.AutoShoot then
-                local weapon = LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
-                if weapon then
-                    weapon:Activate()
+        local tPos = PM(target)
+        local tP = target.Character:FindFirstChild(A.P)
+        if tP then
+            local tCFrame = CFrame.new(C.CFrame.Position, tPos)
+            C.CFrame = tCFrame
+            if A.A then
+                local tool = L.Backpack:FindFirstChildOfClass("Tool")
+                if tool then
+                    tool:Activate()
                 end
             end
         end
     end
 end
 
-local function TrackPlayers()
-    if Aimbot.LockedTarget then
-        AimAt(Aimbot.LockedTarget)
+local function TP()
+    if A.T then
+        AA(A.T)
     else
-        Aimbot.LockedTarget = GetClosestTarget()
+        A.T = GCT()
     end
 end
 
-local function CreateGUI()
-    local gui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
-    
-    local toggleButton = Instance.new("TextButton", gui)
-    toggleButton.Size = UDim2.new(0, 100, 0, 50)
-    toggleButton.Position = UDim2.new(1, -110, 0, 10)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleButton.Text = "Aimbot: OFF"
-    toggleButton.TextSize = 18
-    toggleButton.Font = Enum.Font.SourceSans
-    
-    local circleSizeBox = Instance.new("TextBox", gui)
-    circleSizeBox.Size = UDim2.new(0, 100, 0, 50)
-    circleSizeBox.Position = UDim2.new(1, -110, 0, 70)
-    circleSizeBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    circleSizeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    circleSizeBox.Text = tostring(Aimbot.FOVRadius)
-    circleSizeBox.TextSize = 18
-    circleSizeBox.Font = Enum.Font.SourceSans
-    
-    local speedBox = Instance.new("TextBox", gui)
-    speedBox.Size = UDim2.new(0, 100, 0, 50)
-    speedBox.Position = UDim2.new(1, -110, 0, 130)
-    speedBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    speedBox.Text = "Enter Speed"
-    speedBox.TextSize = 18
-    speedBox.Font = Enum.Font.SourceSans
 
-    toggleButton.MouseButton1Click:Connect(function()
-        Aimbot.Enabled = not Aimbot.Enabled
-        toggleButton.Text = Aimbot.Enabled and "Aimbot: ON" or "Aimbot: OFF"
-        if not Aimbot.Enabled then
-            Aimbot.LockedTarget = nil
+local function CGUI()
+    local g = Instance.new("ScreenGui", L.PlayerGui)
+    
+    local b = Instance.new("TextButton", g)
+    b.Size = UDim2.new(0, 100, 0, 50)
+    b.Position = UDim2.new(1, -110, 0, 10)
+    b.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.Text = "Aimbot: OFF"
+    b.TextSize = 18
+    b.Font = Enum.Font.SourceSans
+    
+    local cBox = Instance.new("TextBox", g)
+    cBox.Size = UDim2.new(0, 100, 0, 50)
+    cBox.Position = UDim2.new(1, -110, 0, 70)
+    cBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    cBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    cBox.Text = tostring(A.F)
+    cBox.TextSize = 18
+    cBox.Font = Enum.Font.SourceSans
+    
+    local sBox = Instance.new("TextBox", g)
+    sBox.Size = UDim2.new(0, 100, 0, 50)
+    sBox.Position = UDim2.new(1, -110, 0, 130)
+    sBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    sBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sBox.Text = "Enter Speed"
+    sBox.TextSize = 18
+    sBox.Font = Enum.Font.SourceSans
+
+    b.MouseButton1Click:Connect(function()
+        A.E = not A.E
+        b.Text = A.E and "Aimbot: ON" or "Aimbot: OFF"
+        if not A.E then
+            A.T = nil
         else
-            Aimbot.LockedTarget = GetClosestTarget()
+            A.T = GCT()
         end
     end)
 
-    circleSizeBox.FocusLost:Connect(function(enterPressed)
+    cBox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
-            Aimbot.FOVRadius = tonumber(circleSizeBox.Text) or Aimbot.FOVRadius
-            FOVCircle.Radius = Aimbot.FOVRadius
+            A.F = tonumber(cBox.Text) or A.F
+            FOVC.Radius = A.F
         end
     end)
 
-    speedBox.FocusLost:Connect(function(enterPressed)
+    sBox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
-            local newSpeed = tonumber(speedBox.Text)
+            local newSpeed = tonumber(sBox.Text)
             if newSpeed then
-                LocalPlayer.Character.Humanoid.WalkSpeed = newSpeed
+                L.Character.Humanoid.WalkSpeed = newSpeed
             end
         end
     end)
     
-    return gui
+    return g
 end
 
-LocalPlayer.CharacterAdded:Connect(function(character)
+L.CharacterAdded:Connect(function(c)
     wait(1) 
     if gui then
         gui:Destroy() 
     end
-    gui = CreateGUI()
+    gui = CGUI()
 end)
 
-RunService.RenderStepped:Connect(function()
-    FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    if Aimbot.Enabled then
-        TrackPlayers()
+R.RenderStepped:Connect(function()
+    FOVC.Position = Vector2.new(C.ViewportSize.X / 2, C.ViewportSize.Y / 2)
+    if A.E then
+        TP()
     end
 end)
 
-local gui = CreateGUI()
+
+local gui = CGUI()
